@@ -96,5 +96,6 @@ Thumbs.db
 # Project specific
 output/
 *.html
+!engoo_template.html
 *.json
 logs/
