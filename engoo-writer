@@ -1,0 +1,3 @@
+#!/bin/bash
+cd "/Users/zhenghe/Workspace/github.com/ZhengHe-MD/engoo-daily-news-writer"
+python3 main.py "$@"

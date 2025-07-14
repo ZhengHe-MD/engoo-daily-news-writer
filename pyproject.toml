@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "engoo-daily-news-writer"
+version = "1.0.0"
+description = "Convert online articles to Engoo daily news format for ESL teaching"
+readme = "README.md"
+authors = [
+    {name = "ZhengHe-MD", email = "ranchardzheng@gmail.com"},
+]
+license = {text = "MIT"}
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Education",
+    "Topic :: Education",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+keywords = ["esl", "education", "teaching", "english", "news", "article", "converter"]
+requires-python = ">=3.8"
+dependencies = [
+    "openai>=1.0.0",
+    "langgraph>=0.0.40",
+    "newspaper3k>=0.2.8",
+    "beautifulsoup4>=4.12.0",
+    "requests>=2.31.0",
+    "python-dotenv>=1.0.0",
+    "pydantic>=2.0.0",
+    "lxml>=4.9.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/ZhengHe-MD/engoo-daily-news-writer"
+Repository = "https://github.com/ZhengHe-MD/engoo-daily-news-writer"
+Documentation = "https://github.com/ZhengHe-MD/engoo-daily-news-writer#readme"
+Issues = "https://github.com/ZhengHe-MD/engoo-daily-news-writer/issues"
+
+[project.scripts]
+engoo-writer = "main:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+
+[tool.setuptools.package-data]
+"*" = ["*.html", "*.txt", "*.md"]

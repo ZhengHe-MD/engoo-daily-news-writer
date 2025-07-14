@@ -26,6 +26,8 @@ The system generates content in the standard Engoo daily news format:
 
 ## Installation
 
+### Method 1: Direct Installation (Recommended)
+
 1. Clone this repository:
 ```bash
 git clone <repository-url>
@@ -37,9 +39,36 @@ cd engoo-daily-news-writer
 pip install -r requirements.txt
 ```
 
-3. Set up your OpenAI API key:
+3. Make the CLI executable:
+```bash
+chmod +x engoo-writer
+```
+
+4. Set up your OpenAI API key:
 ```bash
 export OPENAI_API_KEY="your-openai-api-key-here"
+```
+
+### Method 2: Python Package Installation
+
+```bash
+# Install in development mode
+pip install -e .
+
+# Or install from source
+pip install .
+```
+
+### Method 3: Using the executable
+
+After installation, you can use the tool directly:
+```bash
+./engoo-writer "https://example.com/article"
+```
+
+Or if installed as a package:
+```bash
+engoo-writer "https://example.com/article"
 ```
 
 4. (Optional) Set up GitHub token for gist sharing:

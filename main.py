@@ -60,7 +60,14 @@ def save_to_file(result: dict, output_file: str):
 def main():
     """Main command-line interface."""
     parser = argparse.ArgumentParser(
-        description="Convert online articles to Engoo daily news format"
+        description="Convert online articles to Engoo daily news format",
+        prog="engoo-writer",
+        epilog="Examples:\n"
+               "  engoo-writer https://example.com/article\n"
+               "  engoo-writer https://example.com/article -o lesson.html\n"
+               "  engoo-writer https://example.com/article --gist\n"
+               "  engoo-writer https://example.com/article --gist --description 'AI Ethics'",
+        formatter_class=argparse.RawDescriptionHelpFormatter
     )
     parser.add_argument(
         "url",
@@ -75,6 +82,11 @@ def main():
         "--verbose", "-v",
         action="store_true",
         help="Enable verbose logging"
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version="%(prog)s 1.0.0"
     )
     
     # GitHub Gist options
