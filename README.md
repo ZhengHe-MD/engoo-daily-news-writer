@@ -12,6 +12,7 @@ An agentic system built with LangGraph that converts online blog posts and artic
   - Create further discussion questions for advanced practice
 - **LangGraph Workflow**: Implements a robust agentic system with error handling and validation
 - **Multiple Output Formats**: Supports text, HTML, and JSON output formats
+- **Easy Sharing**: Automatically share lessons via GitHub Gist with shareable links
 
 ## Engoo Daily News Format
 
@@ -41,6 +42,13 @@ pip install -r requirements.txt
 export OPENAI_API_KEY="your-openai-api-key-here"
 ```
 
+4. (Optional) Set up GitHub token for gist sharing:
+```bash
+export GITHUB_TOKEN="your-github-token-here"
+```
+
+Create a GitHub Personal Access Token at https://github.com/settings/tokens with "gist" scope.
+
 ## Usage
 
 ### Command Line Interface
@@ -66,6 +74,30 @@ Enable verbose logging:
 ```bash
 python main.py "https://example.com/article-url" --verbose
 ```
+
+### Easy HTML Generation and Sharing
+
+For teachers who want to quickly generate and share professional HTML lessons:
+
+```bash
+# Generate HTML file locally (default behavior)
+python main.py "https://example.com/article-url"
+
+# Generate and share via GitHub Gist
+python main.py "https://example.com/article-url" --gist --description "AI Ethics Lesson"
+
+# Update an existing gist
+python main.py "https://example.com/article-url" --update-gist GIST_ID
+
+# Save to specific file and share
+python main.py "https://example.com/article-url" -o my_lesson.html --gist
+```
+
+The gist sharing feature:
+- Creates a GitHub Gist with your lesson HTML
+- Provides a shareable link that works immediately
+- Allows easy updating of lessons
+- Perfect for sharing with students or colleagues
 
 ### Python API
 
@@ -105,6 +137,7 @@ The system uses LangGraph to implement an agentic workflow:
 The system can be configured through environment variables:
 
 - `OPENAI_API_KEY`: Your OpenAI API key (required)
+- `GITHUB_TOKEN`: Your GitHub Personal Access Token for gist sharing (optional)
 
 ## Requirements
 

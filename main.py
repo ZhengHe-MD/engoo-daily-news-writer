@@ -77,14 +77,19 @@ def main():
         help="Enable verbose logging"
     )
     
+    # GitHub Gist options
+    parser.add_argument("--gist", action="store_true", help="Share lesson via GitHub Gist")
+    parser.add_argument("--update-gist", help="Update existing gist (provide gist ID)")
+    parser.add_argument("--description", help="Custom description for the gist")
+    
     args = parser.parse_args()
     
     if args.verbose:
         import logging
         logging.getLogger().setLevel(logging.DEBUG)
     
-    print(f"Converting article from: {args.url}")
-    print("This may take a moment...")
+    print(f"🔄 Converting article from: {args.url}")
+    print("📚 Generating professional Engoo-style format...")
     
     # Convert the article
     result = convert_url_to_engoo(args.url)
@@ -93,20 +98,64 @@ def main():
         print("✅ Conversion successful!")
         article = result['article']
         
-        print(f"\nTitle: {article['title']}")
-        print(f"Vocabulary items: {len(article['vocabulary'])}")
-        print(f"Discussion questions: {len(article['discussion_questions'])}")
-        print(f"Further discussion questions: {len(article['further_discussion_questions'])}")
+        print(f"📖 Title: {article['title']}")
+        print(f"📝 Vocabulary: {len(article['vocabulary'])} items")
+        print(f"💬 Discussion: {len(article['discussion_questions'])} questions")
+        print(f"🤔 Further Discussion: {len(article['further_discussion_questions'])} questions")
         
         if args.output:
             save_to_file(result, args.output)
         else:
-            print("\nPreview:")
-            print("-" * 50)
-            print(article['title'])
-            print("-" * 50)
-            print(article['article_body'][:300] + "...")
-            print("\nUse -o/--output to save the full result to a file.")
+            # Default to HTML output
+            default_output = "engoo_article.html"
+            with open(default_output, 'w', encoding='utf-8') as f:
+                f.write(article['html'])
+            print(f"✅ Results saved to: {default_output}")
+            args.output = default_output
+            
+        # Handle GitHub Gist sharing
+        if args.gist or args.update_gist:
+            try:
+                from src.github_gist import create_shareable_lesson
+                
+                print("\n🌐 Sharing lesson via GitHub Gist...")
+                
+                gist_result = create_shareable_lesson(
+                    html_content=result['article']['html'],
+                    description=args.description,
+                    gist_id=args.update_gist
+                )
+                
+                print("✅ Lesson shared successfully!")
+                print(f"🔗 Shareable link: {gist_result['preview_url']}")
+                print(f"📝 Gist URL: {gist_result['gist_url']}")
+                print(f"🆔 Gist ID: {gist_result['gist_id']}")
+                print("\n💡 Share the 'Shareable link' with your students!")
+                
+                # Save gist info to a file for future reference
+                output_name = args.output or "engoo_article.html"
+                gist_info_file = output_name.replace('.html', '_gist_info.txt')
+                with open(gist_info_file, 'w', encoding='utf-8') as f:
+                    f.write(f"Gist ID: {gist_result['gist_id']}\n")
+                    f.write(f"Shareable Link: {gist_result['preview_url']}\n")
+                    f.write(f"Gist URL: {gist_result['gist_url']}\n")
+                    f.write(f"Description: {gist_result['description']}\n")
+                
+                print(f"📄 Gist info saved to: {gist_info_file}")
+                
+            except ImportError:
+                print("❌ GitHub Gist sharing requires 'requests' library. Install with: pip install requests")
+            except ValueError as e:
+                print(f"❌ GitHub configuration error: {e}")
+                print("💡 Set your GITHUB_TOKEN environment variable to use gist sharing.")
+                print("   Create a token at: https://github.com/settings/tokens")
+            except Exception as e:
+                print(f"❌ Failed to share via gist: {e}")
+        else:
+            if args.output and args.output.endswith('.html'):
+                print(f"\n🌐 Local file: file://{Path(args.output).absolute()}")
+                print("💡 Use --gist flag to share lesson online with students!")
+            
     else:
         print(f"❌ Conversion failed: {result['error']}")
         sys.exit(1)

@@ -99,3 +99,4 @@ output/
 !engoo_template.html
 *.json
 logs/
+engoo_article_gist_info.txt

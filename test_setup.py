@@ -47,7 +47,7 @@ def test_imports():
         )
         
         html = article.to_html()
-        assert "<h1>Test Article</h1>" in html
+        assert "Test Article" in html and "article-title" in html
         print("✅ Basic functionality test passed")
         
         # Test scraper initialization
@@ -59,6 +59,7 @@ def test_imports():
         print("1. Set your OpenAI API key: export OPENAI_API_KEY='your-api-key-here'")
         print("2. Run the demo: python demo.py")
         print("3. Or convert an article: python main.py 'https://example.com/article'")
+        print("4. Share via GitHub Gist: python main.py 'https://example.com/article' --gist")
         
         return True
         
