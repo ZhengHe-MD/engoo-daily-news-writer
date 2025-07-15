@@ -82,44 +82,62 @@ Create a GitHub Personal Access Token at https://github.com/settings/tokens with
 
 ### Command Line Interface
 
-Convert an article from URL:
+**Basic Usage:**
 ```bash
-python main.py "https://example.com/article-url"
+# Convert article (creates engoo_article.html by default)
+engoo-writer https://example.com/article
+
+# Convert with explicit command
+engoo-writer convert https://example.com/article
 ```
 
-Save to a file:
+**Save to Different Formats:**
 ```bash
-# Save as text
-python main.py "https://example.com/article-url" -o output.txt
-
 # Save as HTML
-python main.py "https://example.com/article-url" -o output.html
+engoo-writer convert https://example.com/article -o lesson.html
+
+# Save as text
+engoo-writer convert https://example.com/article -o lesson.txt
 
 # Save as JSON
-python main.py "https://example.com/article-url" -o output.json
+engoo-writer convert https://example.com/article -o lesson.json
 ```
 
-Enable verbose logging:
+**Enable verbose logging:**
 ```bash
-python main.py "https://example.com/article-url" --verbose
+engoo-writer convert https://example.com/article --verbose
 ```
 
-### Easy HTML Generation and Sharing
+### GitHub Gist Management
 
-For teachers who want to quickly generate and share professional HTML lessons:
-
+**Create and Share Lessons:**
 ```bash
-# Generate HTML file locally (default behavior)
-python main.py "https://example.com/article-url"
+# Create and share via GitHub Gist
+engoo-writer convert https://example.com/article --gist
 
-# Generate and share via GitHub Gist
-python main.py "https://example.com/article-url" --gist --description "AI Ethics Lesson"
+# Create with custom description
+engoo-writer convert https://example.com/article --gist --description "AI Ethics Lesson"
 
-# Update an existing gist
-python main.py "https://example.com/article-url" --update-gist GIST_ID
+# Update existing gist
+engoo-writer convert https://example.com/article --update-gist GIST_ID
+```
 
-# Save to specific file and share
-python main.py "https://example.com/article-url" -o my_lesson.html --gist
+**Manage Your Gists:**
+```bash
+# List all your Engoo lesson gists
+engoo-writer gist list
+
+# List with limit
+engoo-writer gist list --limit 5
+
+# Get details of a specific gist
+engoo-writer gist get GIST_ID
+
+# Delete a gist (with confirmation)
+engoo-writer gist delete GIST_ID
+
+# Delete without confirmation
+engoo-writer gist delete GIST_ID --confirm
 ```
 
 The gist sharing feature:

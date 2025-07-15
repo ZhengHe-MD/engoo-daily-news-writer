@@ -1,6 +1,6 @@
 """
 GitHub Gist integration for sharing Engoo lessons.
-Handles creating and updating gists with generated HTML content.
+Handles creating, updating, listing, and deleting gists with generated HTML content.
 """
 
 import os
@@ -98,7 +98,7 @@ class GitHubGistClient:
             
         except requests.exceptions.RequestException as e:
             logger.error(f"Failed to create gist: {e}")
-            raise
+            raise Exception(f"Failed to create gist: {e}")
     
     def update_gist(self, 
                    gist_id: str, 
@@ -109,30 +109,36 @@ class GitHubGistClient:
         Update an existing GitHub Gist.
         
         Args:
-            gist_id: ID of the existing gist
+            gist_id: ID of the gist to update
             content: New HTML content
-            filename: Name for the gist file (if None, uses existing)
+            filename: Name for the gist file (if None, uses existing filename)
             description: New description (if None, keeps existing)
             
         Returns:
             Dictionary containing updated gist information
         """
-        # First, get the existing gist to preserve filename if not specified
-        existing_gist = self.get_gist(gist_id)
-        if not existing_gist:
-            raise ValueError(f"Gist {gist_id} not found")
+        # First get the existing gist to preserve filename if not specified
+        existing_gist_response = self.get_gist(gist_id)
+        if not existing_gist_response['success']:
+            raise Exception(f"Failed to get existing gist: {existing_gist_response['error']}")
+        
+        existing_gist = existing_gist_response['gist']
         
         if not filename:
-            # Use the first HTML file found in the existing gist
-            for file_name, file_info in existing_gist["files"].items():
-                if file_name.endswith('.html'):
-                    filename = file_name
-                    break
-            
-            if not filename:
-                filename = "engoo_lesson.html"
+            # Use the first HTML file from existing gist
+            html_files = [f for f in existing_gist['files'] if f.endswith('.html')]
+            if html_files:
+                filename = html_files[0]
+            else:
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                filename = f"engoo_lesson_{timestamp}.html"
         
-        update_data: Dict[str, Any] = {
+        if not description:
+            title = self._extract_title_from_html(content)
+            description = f"Engoo ESL Lesson: {title}" if title else existing_gist['description']
+        
+        gist_data = {
+            "description": description,
             "files": {
                 filename: {
                     "content": content
@@ -140,14 +146,11 @@ class GitHubGistClient:
             }
         }
         
-        if description:
-            update_data["description"] = description
-        
         try:
             response = requests.patch(
                 f"{self.base_url}/gists/{gist_id}",
                 headers=self.headers,
-                data=json.dumps(update_data)
+                data=json.dumps(gist_data)
             )
             response.raise_for_status()
             
@@ -163,40 +166,149 @@ class GitHubGistClient:
                 "raw_url": raw_url,
                 "preview_url": preview_url,
                 "filename": filename,
-                "description": gist_info.get("description", "")
+                "description": description
             }
             
-            logger.info(f"Updated gist {gist_id}")
+            logger.info(f"Updated gist {gist_info['id']}: {description}")
             return result
             
         except requests.exceptions.RequestException as e:
             logger.error(f"Failed to update gist {gist_id}: {e}")
-            raise
+            raise Exception(f"Failed to update gist: {e}")
     
-    def get_gist(self, gist_id: str) -> Optional[Dict[str, Any]]:
+    def list_gists(self) -> Dict[str, Any]:
         """
-        Get information about an existing gist.
+        List all gists for the authenticated user.
         
-        Args:
-            gist_id: ID of the gist
-            
         Returns:
-            Gist information or None if not found
+            Dictionary with gist information
         """
         try:
-            response = requests.get(
-                f"{self.base_url}/gists/{gist_id}",
-                headers=self.headers
-            )
+            response = requests.get(f"{self.base_url}/gists", headers=self.headers)
             response.raise_for_status()
-            return response.json()
-        except requests.exceptions.RequestException as e:
+            
+            gists = response.json()
+            
+            # Filter and format gists that look like Engoo lessons
+            engoo_gists = []
+            for gist in gists:
+                # Check if it's likely an Engoo lesson
+                is_engoo = False
+                for filename, file_info in gist.get('files', {}).items():
+                    if (filename.endswith('.html') and 
+                        ('engoo' in filename.lower() or 'lesson' in filename.lower() or 'daily' in filename.lower())):
+                        is_engoo = True
+                        break
+                
+                # Also check description
+                description = gist.get('description', '')
+                if any(keyword in description.lower() for keyword in ['engoo', 'lesson', 'esl', 'daily news']):
+                    is_engoo = True
+                
+                if is_engoo:
+                    # Get the first HTML file for preview
+                    html_files = [f for f in gist['files'].keys() if f.endswith('.html')]
+                    preview_url = None
+                    if html_files:
+                        # Use the gist's HTML URL for HTMLPreview
+                        preview_url = f"https://htmlpreview.github.io/?{gist['html_url']}"
+                    
+                    engoo_gists.append({
+                        'id': gist['id'],
+                        'description': gist.get('description', 'No description'),
+                        'created_at': gist['created_at'],
+                        'updated_at': gist['updated_at'],
+                        'public': gist['public'],
+                        'files': list(gist['files'].keys()),
+                        'html_url': gist['html_url'],
+                        'preview_url': preview_url
+                    })
+            
+            return {
+                'success': True,
+                'gists': engoo_gists,
+                'total_count': len(engoo_gists)
+            }
+            
+        except requests.RequestException as e:
+            logger.error(f"Failed to list gists: {e}")
+            return {
+                'success': False,
+                'error': str(e)
+            }
+    
+    def delete_gist(self, gist_id: str) -> Dict[str, Any]:
+        """
+        Delete a specific gist.
+        
+        Args:
+            gist_id: ID of the gist to delete
+            
+        Returns:
+            Dictionary with deletion status
+        """
+        try:
+            response = requests.delete(f"{self.base_url}/gists/{gist_id}", headers=self.headers)
+            response.raise_for_status()
+            
+            return {
+                'success': True,
+                'message': f'Gist {gist_id} deleted successfully'
+            }
+            
+        except requests.RequestException as e:
+            logger.error(f"Failed to delete gist {gist_id}: {e}")
+            return {
+                'success': False,
+                'error': str(e)
+            }
+    
+    def get_gist(self, gist_id: str) -> Dict[str, Any]:
+        """
+        Get details of a specific gist.
+        
+        Args:
+            gist_id: ID of the gist to retrieve
+            
+        Returns:
+            Dictionary with gist information
+        """
+        try:
+            response = requests.get(f"{self.base_url}/gists/{gist_id}", headers=self.headers)
+            response.raise_for_status()
+            
+            gist = response.json()
+            
+            # Get the first HTML file for preview
+            html_files = [f for f in gist['files'].keys() if f.endswith('.html')]
+            preview_url = None
+            if html_files:
+                preview_url = f"https://htmlpreview.github.io/?{gist['html_url']}"
+            
+            return {
+                'success': True,
+                'gist': {
+                    'id': gist['id'],
+                    'description': gist.get('description', 'No description'),
+                    'created_at': gist['created_at'],
+                    'updated_at': gist['updated_at'],
+                    'public': gist['public'],
+                    'files': list(gist['files'].keys()),
+                    'html_url': gist['html_url'],
+                    'preview_url': preview_url
+                }
+            }
+            
+        except requests.RequestException as e:
             logger.error(f"Failed to get gist {gist_id}: {e}")
-            return None
+            return {
+                'success': False,
+                'error': str(e)
+            }
     
     def _extract_title_from_html(self, html_content: str) -> Optional[str]:
         """
-        Extract title from HTML content for gist description.
+        Extract article title from HTML content.
         
         Args:
             html_content: HTML string
@@ -224,6 +336,7 @@ class GitHubGistClient:
             return None
 
 
+# Convenience functions for easier usage
 def create_shareable_lesson(html_content: str, 
                           description: Optional[str] = None, 
                           gist_id: Optional[str] = None) -> Dict[str, Any]:
@@ -244,3 +357,82 @@ def create_shareable_lesson(html_content: str,
         return client.update_gist(gist_id, html_content, description=description)
     else:
         return client.create_gist(html_content, description=description)
+
+
+def list_engoo_gists() -> Dict[str, Any]:
+    """
+    Convenience function to list all Engoo lesson gists.
+    
+    Returns:
+        Dictionary with gist listing
+    """
+    client = GitHubGistClient()
+    return client.list_gists()
+
+
+def delete_engoo_gist(gist_id: str) -> Dict[str, Any]:
+    """
+    Convenience function to delete an Engoo lesson gist.
+    
+    Args:
+        gist_id: ID of the gist to delete
+        
+    Returns:
+        Dictionary with deletion status
+    """
+    client = GitHubGistClient()
+    return client.delete_gist(gist_id)
+
+
+def get_engoo_gist(gist_id: str) -> Dict[str, Any]:
+    """
+    Convenience function to get details of an Engoo lesson gist.
+    
+    Args:
+        gist_id: ID of the gist to retrieve
+        
+    Returns:
+        Dictionary with gist information
+    """
+    client = GitHubGistClient()
+    return client.get_gist(gist_id)
+
+
+# Additional convenience functions for CLI usage
+def list_engoo_gists() -> Dict[str, Any]:
+    """
+    Convenience function to list all Engoo lesson gists.
+    
+    Returns:
+        Dictionary with gist listing
+    """
+    client = GitHubGistClient()
+    return client.list_gists()
+
+
+def delete_engoo_gist(gist_id: str) -> Dict[str, Any]:
+    """
+    Convenience function to delete an Engoo lesson gist.
+    
+    Args:
+        gist_id: ID of the gist to delete
+        
+    Returns:
+        Dictionary with deletion status
+    """
+    client = GitHubGistClient()
+    return client.delete_gist(gist_id)
+
+
+def get_engoo_gist(gist_id: str) -> Dict[str, Any]:
+    """
+    Convenience function to get details of an Engoo lesson gist.
+    
+    Args:
+        gist_id: ID of the gist to retrieve
+        
+    Returns:
+        Dictionary with gist information
+    """
+    client = GitHubGistClient()
+    return client.get_gist(gist_id)
