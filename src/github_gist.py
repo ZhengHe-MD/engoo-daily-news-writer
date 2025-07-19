@@ -210,8 +210,10 @@ class GitHubGistClient:
                     html_files = [f for f in gist['files'].keys() if f.endswith('.html')]
                     preview_url = None
                     if html_files:
-                        # Use the gist's HTML URL for HTMLPreview
-                        preview_url = f"https://htmlpreview.github.io/?{gist['html_url']}"
+                        # Use the raw URL from the first HTML file for HTMLPreview
+                        first_html_file = html_files[0]
+                        raw_url = gist['files'][first_html_file]['raw_url']
+                        preview_url = f"https://htmlpreview.github.io/?{raw_url}"
                     
                     engoo_gists.append({
                         'id': gist['id'],
@@ -283,7 +285,10 @@ class GitHubGistClient:
             html_files = [f for f in gist['files'].keys() if f.endswith('.html')]
             preview_url = None
             if html_files:
-                preview_url = f"https://htmlpreview.github.io/?{gist['html_url']}"
+                # Use the raw URL from the first HTML file for HTMLPreview
+                first_html_file = html_files[0]
+                raw_url = gist['files'][first_html_file]['raw_url']
+                preview_url = f"https://htmlpreview.github.io/?{raw_url}"
             
             return {
                 'success': True,
@@ -359,46 +364,6 @@ def create_shareable_lesson(html_content: str,
         return client.create_gist(html_content, description=description)
 
 
-def list_engoo_gists() -> Dict[str, Any]:
-    """
-    Convenience function to list all Engoo lesson gists.
-    
-    Returns:
-        Dictionary with gist listing
-    """
-    client = GitHubGistClient()
-    return client.list_gists()
-
-
-def delete_engoo_gist(gist_id: str) -> Dict[str, Any]:
-    """
-    Convenience function to delete an Engoo lesson gist.
-    
-    Args:
-        gist_id: ID of the gist to delete
-        
-    Returns:
-        Dictionary with deletion status
-    """
-    client = GitHubGistClient()
-    return client.delete_gist(gist_id)
-
-
-def get_engoo_gist(gist_id: str) -> Dict[str, Any]:
-    """
-    Convenience function to get details of an Engoo lesson gist.
-    
-    Args:
-        gist_id: ID of the gist to retrieve
-        
-    Returns:
-        Dictionary with gist information
-    """
-    client = GitHubGistClient()
-    return client.get_gist(gist_id)
-
-
-# Additional convenience functions for CLI usage
 def list_engoo_gists() -> Dict[str, Any]:
     """
     Convenience function to list all Engoo lesson gists.
