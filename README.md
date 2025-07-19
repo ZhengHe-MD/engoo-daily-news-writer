@@ -1,6 +1,24 @@
-# Engoo Daily News Writeo (Vibe-coded)
+# Engoo Daily News Writer
 
 An agentic system built with LangGraph that converts online blog posts and articles into Engoo daily news format, perfect for ESL (English as a Second Language) teachers and students.
+
+## 👥 For Different Users
+
+### 🎓 **For Educators & Non-Technical Users**
+Want to start creating lessons right away without technical setup? 
+
+👉 **See [README_EDUCATORS.md](README_EDUCATORS.md)** for the easy, guided installation!
+
+Features simple:
+- ✅ One-click installation script
+- ✅ Interactive API key setup 
+- ✅ Graphical interface option
+- ✅ Step-by-step instructions
+
+### 👨‍💻 **For Developers & Technical Users**
+Continue reading below for advanced setup, customization, and development details.
+
+---
 
 ## Features
 
@@ -24,7 +42,7 @@ The system generates content in the standard Engoo daily news format:
 4. **Discussion Questions**: 4-5 questions to encourage conversation
 5. **Further Discussion**: 3-4 advanced questions for deeper thinking
 
-## Installation
+## Technical Installation
 
 ### Method 1: Direct Installation (Recommended)
 
