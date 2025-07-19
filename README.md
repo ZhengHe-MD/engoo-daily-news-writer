@@ -42,32 +42,64 @@ The system generates content in the standard Engoo daily news format:
 4. **Discussion Questions**: 4-5 questions to encourage conversation
 5. **Further Discussion**: 3-4 advanced questions for deeper thinking
 
-## Technical Installation
+## Installation
 
-### Method 1: Direct Installation (Recommended)
+### 🚀 Easy Installation (Recommended for All Users)
+
+**One-command setup for educators and non-technical users:**
+
+```bash
+# Clone the repository
+git clone https://github.com/ZhengHe-MD/engoo-daily-news-writer.git
+cd engoo-daily-news-writer
+
+# Run the easy installer
+./easy_install.sh          # Mac/Linux
+# OR
+easy_install.bat           # Windows
+```
+
+The easy installer will:
+- ✅ Check your Python installation
+- ✅ Set up a virtual environment
+- ✅ Install all dependencies automatically
+- ✅ Guide you through API key setup
+- ✅ Test everything works
+- ✅ Make the tool available globally
+
+**What you need:**
+- OpenAI API key (get from [platform.openai.com/api-keys](https://platform.openai.com/api-keys))
+- GitHub token (get from [github.com/settings/tokens](https://github.com/settings/tokens) with "gist" permission)
+
+### 👨‍💻 Advanced Installation (For Developers)
+
+#### Method 1: Manual Setup
 
 1. Clone this repository:
 ```bash
-git clone <repository-url>
+git clone https://github.com/ZhengHe-MD/engoo-daily-news-writer.git
 cd engoo-daily-news-writer
 ```
 
-2. Install dependencies:
+2. Create virtual environment and install dependencies:
 ```bash
+python3 -m venv .venv
+source .venv/bin/activate  # or .venv\Scripts\activate on Windows
 pip install -r requirements.txt
 ```
 
-3. Make the CLI executable:
+3. Set up environment variables:
+```bash
+cp .env.example .env
+# Edit .env with your API keys
+```
+
+4. Make the CLI executable:
 ```bash
 chmod +x engoo-writer
 ```
 
-4. Set up your OpenAI API key:
-```bash
-export OPENAI_API_KEY="your-openai-api-key-here"
-```
-
-### Method 2: Python Package Installation
+#### Method 2: Python Package Installation
 
 ```bash
 # Install in development mode
@@ -77,52 +109,64 @@ pip install -e .
 pip install .
 ```
 
-### Method 3: Using the executable
+### 🎨 GUI Option (Experimental)
 
-After installation, you can use the tool directly:
+For users who prefer a graphical interface:
+
 ```bash
-./engoo-writer "https://example.com/article"
+python3 gui_launcher.py
 ```
 
-Or if installed as a package:
-```bash
-engoo-writer "https://example.com/article"
-```
-
-4. (Optional) Set up GitHub token for gist sharing:
-```bash
-export GITHUB_TOKEN="your-github-token-here"
-```
-
-Create a GitHub Personal Access Token at https://github.com/settings/tokens with "gist" scope.
+This provides a point-and-click interface for converting articles and managing lessons.
 
 ## Usage
 
-### Command Line Interface
+### Quick Start (After Easy Installation)
 
 **Basic Usage:**
 ```bash
-# Convert article (creates engoo_article.html by default)
-engoo-writer https://example.com/article
+# Convert any article from anywhere on your system
+engoo-writer convert https://example.com/interesting-article
 
-# Convert with explicit command
+# Convert and share online instantly
+engoo-writer convert https://example.com/article --gist
+
+# List all your shared lessons
+engoo-writer gist list
+
+# Get help
+engoo-writer --help
+```
+
+### Command Line Interface
+
+**Convert Articles:**
+```bash
+# Basic conversion (creates HTML file)
 engoo-writer convert https://example.com/article
+
+# Save to specific file
+engoo-writer convert https://example.com/article -o my-lesson.html
+
+# Save as different formats
+engoo-writer convert https://example.com/article -o lesson.txt  # Text format
+engoo-writer convert https://example.com/article -o lesson.json # JSON format
 ```
 
-**Save to Different Formats:**
+**Share Lessons Online:**
 ```bash
-# Save as HTML
-engoo-writer convert https://example.com/article -o lesson.html
+# Convert and create shareable link
+engoo-writer convert https://example.com/article --gist
 
-# Save as text
-engoo-writer convert https://example.com/article -o lesson.txt
-
-# Save as JSON
-engoo-writer convert https://example.com/article -o lesson.json
+# Manage your shared lessons
+engoo-writer gist list          # List all lessons
+engoo-writer gist get <id>      # View specific lesson
+engoo-writer gist delete <id>   # Delete a lesson
 ```
 
-**Enable verbose logging:**
+**Debugging:**
 ```bash
+# Enable verbose logging
 engoo-writer convert https://example.com/article --verbose
 ```
 
